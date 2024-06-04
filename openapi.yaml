@@ -1,0 +1,342 @@
+openapi: 3.0.0
+info:
+  title: Shopping Cart API
+  description: Basic API providing interactions with a generic shopping cart.
+  version: 0.1.0
+servers:
+  - url: http://localhost:8000
+    description: Local Development Server
+components:
+  parameters:
+    cartId:
+      in: path
+      name: cartId
+      schema:
+        type: integer
+      required: true
+      description: Numeric ID of Cart to interact with
+    itemId:
+      in: path
+      name: itemId
+      schema:
+        type: integer
+      required: true
+      description: Numeric ID of Item to interact with
+  schemas:
+
+    # ---- Generic ----
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    # ---- Healthcheck ----
+    Healthcheck:
+      type: object
+      required:
+        - message
+        - database_status
+        - timestamp
+      properties:
+        message:
+          type: string
+        database_status:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    # ---- Cart ----
+  
+    Cart:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+
+    # ---- Item ----
+
+    Item:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    
+    CartSummary:
+      type: object
+      required:
+        - cart
+        - items
+      properties:
+        cart:
+          $ref: "#/components/schemas/Cart"
+        items:
+          type: array
+          itemqty:
+            type: object
+            required:
+              - item
+              - quantity
+            properties:
+              item:
+                $ref: "#/components/schemas/Item"
+              quantity:
+                type: integer
+
+paths:
+  /check:
+    get:
+      summary: Server Healthcheck
+      description: Server Healthcheck
+      responses:
+        '200':
+          description: Successful Healthcheck
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Healthcheck"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ---- Cart Routes ---- 
+  /cart:
+    put:
+      summary: Create New Shopping Cart
+      description: Create New Shopping Cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Cart"
+      responses:
+        '200':
+          description: "Created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /cart/{cartId}:
+    get:
+      summary: Retrieve items in Cart by ID
+      description: Retrieve items in Cart by ID
+      parameters:
+        - $ref: "#/components/parameters/cartId"
+      responses:
+        '200':
+          description: "Retrieved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartSummary"
+        '404':
+          description: "Not Found"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: "Internal Server Error"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Delete Cart by ID
+      description: Delete Cart by ID
+      parameters:
+        - $ref: "#/components/parameters/cartId"
+      responses:
+        '200':
+          description: "Deleted"
+        '404':
+          description: "Not Found"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: "Internal Server Error"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /cart/{cartId}/add/{itemId}:
+    put:
+      summary: Add Item with ItemID to Cart with CartID
+      description: Add Item with ItemID to Cart CartID
+      parameters:
+        - $ref: "#/components/parameters/cartId"
+        - $ref: "#/components/parameters/itemId"
+      responses:
+        '200': 
+          description: "Added"
+        '404':
+          description: "Not Found"
+          content:
+            application/json:
+              schemas:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schemas:
+                $ref: "#/components/schemas/Error"
+        
+    delete:
+      summary: Remove Item with ItemID from Cart with CartID
+      description: Remove Item with ItemID from Cart with CartID
+      parameters:
+        - $ref: "#/components/parameters/cartId"
+        - $ref: "#/components/parameters/itemId"
+      responses:
+        '200': 
+          description: "Removed"
+        '204':
+          description: "Item not in Cart"
+        '404':
+          description: "Not Found"
+          content:
+            application/json:
+              schemas:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schemas:
+                $ref: "#/components/schemas/Error"
+
+  # ---- Item Create/Retrieve/Update/Delete ----
+
+  /item:
+    put:
+      summary: Create New Item
+      description: Create New Item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Item"
+      responses:
+        '200':
+          description: "Created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        '204':
+          description: "Item Already Exists"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /item/{itemId}:
+    get:
+      summary: Retrieve Item Description
+      description: Retrieve Item Description
+      parameters:
+        - $ref: "#/components/parameters/itemId"
+      responses:
+        '200':
+          description: "Retrieved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        '404':
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: Update Item Description
+      description: Update Item Description
+      parameters:
+        - $ref: "#/components/parameters/itemId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Item"
+      responses:
+        '200':
+          description: "Updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        '404':
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Delete Item 
+      description: Delete Item 
+      parameters:
+        - $ref: "#/components/parameters/itemId"
+      responses:
+        '200':
+          description: "Deleted"
+        '404':
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
+            
+        
+      
+    
+  

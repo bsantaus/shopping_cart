@@ -1,0 +1,8 @@
+fastapi
+prometheus-fastapi-instrumentator
+psycopg2
+pydantic
+pydantic-settings
+pytest
+sqlmodel
+# fastapi-code-generator
