@@ -30,6 +30,7 @@ class ItemsInCart(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     cart_id: int = Field(foreign_key="cart.id")
     item_id: int = Field(foreign_key="item.id")
+    quantity: int
 
 class ItemQty(SQLModel):
     item: Item

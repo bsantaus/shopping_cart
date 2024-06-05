@@ -29,15 +29,6 @@ def get_all_carts(db):
         all_carts = list(carts.all())
     return all_carts
 
-# def test_check():
-#     res = client.get("/check")
-#     assert res.status_code == 200
-#     healthcheck = json.loads(str(res.content, "utf-8"))
-
-#     assert healthcheck["message"] == "Server Ready"
-#     assert healthcheck["database_status"] == "Connected"
-#     assert "timestamp" in healthcheck
-
 def test_create_and_delete_carts(db):
     res = client.put("/cart", json={
         "name": "Create Test 0"

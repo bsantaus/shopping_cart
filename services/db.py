@@ -81,6 +81,35 @@ class DB:
         except NoResultFound:
             return False, None
 
+    def retrieve_link(self, model, cart_id, item_id):
+        try:
+            with Session(self._engine) as session:
+                stmt = select(model).where(model.cart_id == cart_id, model.item_id == item_id)
+                res = session.exec(stmt)
+                entry = res.one()
+            return True, entry
+        except MultipleResultsFound:
+            return False, f"Multiple results found for ID {id}"
+        except NoResultFound:
+            return True, None
+        
+
+    def retrieve_cart_items(self, model, cart_id):
+        with Session(self._engine) as session:
+            stmt = select(model).where(model.cart_id == cart_id)
+            res = session.exec(stmt)
+            entries = res.all()
+        return True, entries
+    
+
+    def clear_cart(self, model, cart_id):
+        with Session(self._engine) as session:
+            stmt = select(model).where(model.cart_id == cart_id)
+            res = session.exec(stmt)
+            entries = res.all()
+            for entry in entries:
+                session.delete(entry)
+            session.commit()
 
 def sc_database():
     global db
