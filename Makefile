@@ -5,6 +5,10 @@ build:
 	cp .env.compose .env
 	docker build . -t shopping_cart_api:latest
 
+start-local-api:
+	cp .env.test .env
+	fastapi run main.py
+
 start: build
 	cp .env.compose .env
 	docker compose up --force-recreate -d
