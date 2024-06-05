@@ -1,4 +1,5 @@
-from sqlmodel import create_engine, SQLModel
+from sqlmodel import create_engine, SQLModel, Session, select
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from config import settings
 
 db = None
@@ -18,6 +19,30 @@ class DB:
         self._engine = create_engine(conn_str)
         SQLModel.metadata.create_all(self._engine)
 
+    def create(self, entry):
+        try:
+            with Session(self._engine) as session:
+                session.add(entry)
+                session.commit()
+                session.refresh(entry)
+            return True, entry
+        except Exception as e:
+            return False, str(e)
+        
+    def delete(self, model, id):
+        try:
+            with Session(self._engine) as session:
+                stmt = select(model).where(model.id == id)
+                res = session.exec(stmt)
+                entry = res.one()
+                session.delete(entry)
+                session.commit()
+            return True, 1
+        except MultipleResultsFound:
+            return False, f"Multiple results found for ID {id}"
+        except NoResultFound:
+            return True, 0
+        
 def sc_database():
     global db
     if not db:

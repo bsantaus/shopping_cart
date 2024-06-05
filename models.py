@@ -13,17 +13,14 @@ class Error(SQLModel):
     message: str
     timestamp: Optional[datetime] = None
 
-
 class Healthcheck(SQLModel):
     message: str
     database_status: str
     timestamp: datetime
 
-
 class Cart(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-
 
 class Item(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -37,7 +34,6 @@ class ItemsInCart(SQLModel, table=True):
 class ItemQty(SQLModel):
     item: Item
     quantity: int
-
 
 class CartSummary(SQLModel):
     cart: Cart

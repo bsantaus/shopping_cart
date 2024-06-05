@@ -17,7 +17,7 @@ def db():
             password=settings.POSTGRES_PASSWORD,
             host=settings.POSTGRES_HOST,
             port=settings.POSTGRES_PORT,
-            database=settings.POSTGRES_DB,
+            database=settings.POSTGRES_DB
         )
     )
     return create_engine(conn_str)
@@ -25,9 +25,9 @@ def db():
 def get_all_carts(db):
     with Session(db) as session:
         stmt = select(Cart)
-        carts = session.execute(stmt)
-
-    return carts
+        carts = session.exec(stmt)
+        all_carts = list(carts.all())
+    return all_carts
 
 # def test_check():
 #     res = client.get("/check")
@@ -51,6 +51,7 @@ def test_create_and_delete_carts(db):
 
     assert len(carts) >= 1
     cart = carts[0]
+    print(cart)
     assert cart.name == "Create Test 0"
 
     res = client.put("/cart", json={
@@ -66,21 +67,21 @@ def test_create_and_delete_carts(db):
     
     prev_carts_len = 2
     for cart in carts:
-        res = client.delete(f"/cart/{cart['id']}")
+        res = client.delete(f"/cart/{cart.id}")
         assert res.status_code == 200
 
         fewer_carts = get_all_carts(db)
         assert len(fewer_carts) < prev_carts_len
         prev_carts_len -= 1
-        assert cart["id"] not in [c["id"] for c in fewer_carts]
+        assert cart.id not in [c.id for c in fewer_carts]
         
 
 def test_delete_nonexistent_cart():
     res = client.delete("/cart/1000")
     assert res.status_code == 404
-    message = json.loads(res.content)
+    message = json.loads(res.content)["message"]
 
-    assert res.content == "Cart with ID 1000 does not exist"
+    assert message == "Cart with ID 1000 does not exist"
 
     res = client.put("/cart", json={
         "name": "Create Test 0"

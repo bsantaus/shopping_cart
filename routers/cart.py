@@ -1,15 +1,31 @@
 from fastapi import APIRouter, Path
+from fastapi.responses import JSONResponse
 from models import Cart, Item, CartSummary, Error
 from typing import Union, Optional
+
+from services import sc_database
 
 cart_router = APIRouter()
 
 @cart_router.put('/cart', response_model=Cart, responses={'500': {'model': Error}})
-def put_cart(body: Cart = None) -> Union[Cart, Error]:
+def put_cart(cart: Cart = None) -> Union[Cart, Error]:
     """
     Create New Shopping Cart
     """
-    pass
+    
+    ok, db_cart = sc_database().create(cart)
+    
+    if ok:
+        return db_cart
+    else:
+        return JSONResponse(
+            status_code=500,
+            content=dict(
+                Error(
+                    message="Error while creating cart",
+                )
+            )
+        )
 
 
 @cart_router.get(
@@ -35,7 +51,30 @@ def delete_cart_cart_id(cart_id: int = Path(..., alias='cartId')) -> Optional[Er
     """
     Delete Cart by ID
     """
-    pass
+    
+    ok, num_deleted = sc_database().delete(Cart, id=cart_id)
+    
+    if ok:
+        if num_deleted == 1:
+            return "Deleted"
+        elif num_deleted == 0:
+            return JSONResponse(
+            status_code=404,
+            content=dict(
+                Error(
+                    message=f"Cart with ID {cart_id} does not exist",
+                )
+            )
+        )
+    
+    return JSONResponse(
+        status_code=500,
+        content=dict(
+            Error(
+                message="Error while deleting cart"
+            )
+        )
+    )
 
 
 @cart_router.put('/cart/{cartId}/add/{itemId}', response_model=None)
