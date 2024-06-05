@@ -20,6 +20,8 @@ class DB:
         SQLModel.metadata.create_all(self._engine)
 
     def create(self, entry):
+        if entry.id != None:
+            entry.id = None
         try:
             with Session(self._engine) as session:
                 session.add(entry)
@@ -43,6 +45,43 @@ class DB:
         except NoResultFound:
             return True, 0
         
+    def update(self, model, id, content):
+        if content.id != None:
+            content.id = None
+        try:
+            with Session(self._engine) as session:
+                stmt = select(model).where(model.id == id)
+                res = session.exec(stmt)
+                entry = res.one()
+
+                d_content = dict(content)
+                for key, val in d_content.items():
+                    if val != None:
+                        setattr(entry, key, val)
+
+                session.add(entry)
+                session.commit()
+                session.refresh(entry)
+
+            return True, entry
+        except MultipleResultsFound:
+            return False, f"Multiple results found for ID {id}"
+        except NoResultFound:
+            return True, None
+        
+    def retrieve(self, model, id):
+        try:
+            with Session(self._engine) as session:
+                stmt = select(model).where(model.id == id)
+                res = session.exec(stmt)
+                entry = res.one()
+            return True, entry
+        except MultipleResultsFound:
+            return False, f"Multiple results found for ID {id}"
+        except NoResultFound:
+            return False, None
+
+
 def sc_database():
     global db
     if not db:

@@ -6,7 +6,7 @@ services:
     ports:
       - "5432:5432"
   api:
-    build: .
+    image: "shopping_cart_api:latest"
     env_file:
       - .env
     ports:

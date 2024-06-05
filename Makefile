@@ -1,8 +1,11 @@
 install:
 	pip install -r requirements.txt
 
-start:
-	docker compose up -d
+build:
+	docker build . -t shopping_cart_api:latest
+
+start: build
+	docker compose up --force-recreate -d
 
 kill:
 	docker compose down
