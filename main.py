@@ -14,7 +14,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from models import Healthcheck, Error
 from routers import cart_router, item_router
-from services import sc_database
+from services import sc_database, custom_metrics
 
 app = FastAPI(
     title='Shopping Cart API',
@@ -28,7 +28,15 @@ app = FastAPI(
 app.include_router(cart_router, tags=["Cart"])
 app.include_router(item_router, tags=["Item"])
 
-Instrumentator().instrument(app).expose(app)
+instrumentator = Instrumentator().instrument(app)
+
+for metric in custom_metrics:
+    instrumentator.add(metric())
+
+@app.on_event("startup")
+async def _startup():
+    instrumentator.expose(app)
+
 
 @app.get('/check', response_model=Healthcheck, responses={'500': {'model': Error}})
 def get_check() -> Union[Healthcheck, Error]:

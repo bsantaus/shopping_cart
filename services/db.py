@@ -80,6 +80,13 @@ class DB:
             return False, f"Multiple results found for ID {id}"
         except NoResultFound:
             return False, None
+        
+    def enumerate(self, model):
+        with Session(self._engine) as session:
+            stmt = select(model)
+            res = session.exec(stmt)
+            entries = res.all()
+        return True, entries
 
     def retrieve_link(self, model, cart_id, item_id):
         try:
@@ -94,9 +101,13 @@ class DB:
             return True, None
         
 
-    def retrieve_cart_items(self, model, cart_id):
+    def retrieve_cart_items(self, model, cart_id = None, item_id = None):
         with Session(self._engine) as session:
-            stmt = select(model).where(model.cart_id == cart_id)
+            stmt = select(model)
+            if cart_id != None:
+                stmt = stmt.where(model.cart_id == cart_id)
+            if item_id != None:
+                stmt = stmt.where(model.item_id == item_id)
             res = session.exec(stmt)
             entries = res.all()
         return True, entries
