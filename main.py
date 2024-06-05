@@ -10,6 +10,8 @@ from datetime import datetime
 from fastapi import FastAPI, Path
 from fastapi.responses import JSONResponse
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 from models import Healthcheck, Error
 from routers import cart_router, item_router
 from services import sc_database
@@ -26,6 +28,7 @@ app = FastAPI(
 app.include_router(cart_router, tags=["Cart"])
 app.include_router(item_router, tags=["Item"])
 
+Instrumentator().instrument(app).expose(app)
 
 @app.get('/check', response_model=Healthcheck, responses={'500': {'model': Error}})
 def get_check() -> Union[Healthcheck, Error]:

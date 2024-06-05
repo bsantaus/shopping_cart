@@ -23,21 +23,16 @@ class Healthcheck(SQLModel):
 class Cart(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    items: list["ItemsInCart"] = Relationship(back_populates="cart")
 
 
 class Item(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
 
-    carts: list["ItemsInCart"] = Relationship(back_populates="item")
-
 class ItemsInCart(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     cart_id: int = Field(foreign_key="cart.id")
-    cart: Cart = Relationship(back_populates="items")
     item_id: int = Field(foreign_key="item.id")
-    item: Item = Relationship(back_populates="carts")
 
 class ItemQty(SQLModel):
     item: Item

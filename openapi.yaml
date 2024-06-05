@@ -99,6 +99,12 @@ components:
                 type: integer
 
 paths:
+  /metrics:
+    get:
+      summary: Prometheus Metrics Scraping Endpoint
+      description: Prometheus Metrics Scraping Endpoint
+      
+
   /check:
     get:
       summary: Server Healthcheck
